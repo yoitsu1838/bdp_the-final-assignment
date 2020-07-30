@@ -3,10 +3,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -42,11 +44,9 @@ public class musicInfo extends HttpServlet {
 	String programName;
 
 	PreparedStatement prepStmt_S;
-	PreparedStatement prepStmt_S2;
 
 	//To do OR検索とAND検索の選択
-	String strPrepSQL_S = "SELECT * FROM anison WHERE musicname LIKE ? AND artistname LIKE ? AND programname LIKE ?";
-	String strPrepSQL_S2 = "SELECT * FROM program WHERE programNameKana LIKE ? ";//カナから作品名を検索
+	String strPrepSQL_S = "SELECT * FROM anison WHERE musicId = ?";
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -71,51 +71,103 @@ public class musicInfo extends HttpServlet {
 		/* annict APIからアニメ情報を取得*/
 
 		// InputStreamの用意
-		if (!(programName.length() == 0)) {
-			URL url = new URL(
-					"https://api.annict.com/v1/works?access_token=*******&filter_title="
-							+ URLEncoder.encode(programName, "UTF-8"));
-			URLConnection connection = url.openConnection();
-			// 接続
-			connection.connect();
-			// サーバからやってくるデータをInputStreamとして取得
-			InputStream inputStream = connection.getInputStream();
-			// 次に inputStream を読み込む InputStreamReader のインスタンス inputStreamReader を生成
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-			// さらに inputStreamReader をラップする BufferedReader のインスタンス reader を生成
-			BufferedReader reader = new BufferedReader(inputStreamReader);
-			String jsonRaw;
-			jsonRaw = reader.readLine();
-			//json配列の形へ整形
-			String escapeWord = "total_count";
-			int endIndex = jsonRaw.indexOf(escapeWord);
-			System.out.println(escapeWord + endIndex);
-			endIndex = endIndex - 2;
-			System.out.println(jsonRaw);
-			jsonRaw = jsonRaw.substring(9, endIndex);//[～～]ノカタチへ
-			System.out.println(jsonRaw);
 
-			//配列へ
-			JSONArray jsonArray = new JSONArray(jsonRaw);
-			ArrayList<HashMap<String, String>> annictInfos = new ArrayList<HashMap<String, String>>();
-			String ogImgUrl = "";
-			for (int i = 0; i < jsonArray.length(); i++) {
-				HashMap<String, String> annictInfo = new HashMap<String, String>();
-				JSONObject jsonObject = jsonArray.getJSONObject(i);
-				//System.out.println(jsonObject.getString("images"));　//To do jsonの項目の中に配列存在する。どう扱う？
-					//ogImgUrl = jsonObject.getString("og_image_url");
-					//annictInfo.put(jsonObject.getString("title"), ogImgUrl);
-				annictInfo.put("title", jsonObject.getString("title"));
-				annictInfo.put("annictId", String.valueOf(jsonObject.getInt("id")));
-				annictInfo.put("officialHpUrl", jsonObject.getString("official_site_url"));
+		URL url = new URL(
+				"https://api.annict.com/v1/works?access_token=evUnT3lwAhraTapSKpmZCmIesUfH1x60lI5zG_fpvrs&filter_title="
+						+ URLEncoder.encode(programName, "UTF-8"));
+		URLConnection connection = url.openConnection();
+		// 接続
+		connection.connect();
+		// サーバからやってくるデータをInputStreamとして取得
+		InputStream inputStream = connection.getInputStream();
+		// 次に inputStream を読み込む InputStreamReader のインスタンス inputStreamReader を生成
+		InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+		// さらに inputStreamReader をラップする BufferedReader のインスタンス reader を生成
+		BufferedReader reader = new BufferedReader(inputStreamReader);
+		String jsonRaw;
+		jsonRaw = reader.readLine();
+		//json配列の形へ整形
+		String escapeWord = "total_count";
+		int endIndex = jsonRaw.indexOf(escapeWord);
+		System.out.println(escapeWord + endIndex);
+		endIndex = endIndex - 2;
+		System.out.println(jsonRaw);
+		jsonRaw = jsonRaw.substring(9, endIndex);//[～～]ノカタチへ
+		System.out.println(jsonRaw);
 
-			}
-
+		//配列へ
+		JSONArray jsonArray = new JSONArray(jsonRaw);
+		ArrayList<HashMap<String, String>> annictInfos = new ArrayList<HashMap<String, String>>();
+		String ogImgUrl = "";
+		for (int i = 0; i < jsonArray.length(); i++) {
+			HashMap<String, String> annictInfo = new HashMap<String, String>();
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+			//System.out.println(jsonObject.getString("images"));　//To do jsonの項目の中に配列存在する。どう扱う？
+			//ogImgUrl = jsonObject.getString("og_image_url");
+			//annictInfo.put(jsonObject.getString("title"), ogImgUrl);
+			annictInfo.put("title", jsonObject.getString("title"));
+			annictInfo.put("annictId", String.valueOf(jsonObject.getInt("id")));
+			annictInfo.put("officialHpUrl", jsonObject.getString("official_site_url"));
+			annictInfo.put("seasonName", jsonObject.getString("season_name_text"));
+			annictInfos.add(annictInfo);
 		}
+		request.setAttribute("annictInfos", annictInfos);
+		musicInfoGetter(request,response);
 
 		String view = "/WEB-INF/views/musicInfo.jsp";
 		RequestDispatcher dispatcher = request.getRequestDispatcher(view);
 		dispatcher.forward(request, response);
+	}
+
+	public void musicInfoGetter(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			Class.forName(driverClassName);
+			connection = DriverManager.getConnection(url, user, password);
+
+			String musicId = request.getParameter("musicId");
+
+			prepStmt_S = connection.prepareStatement(strPrepSQL_S);
+
+			prepStmt_S.setString(1, musicId);
+
+			resultSet = prepStmt_S.executeQuery();
+
+			response.setContentType("text/html; charset=UTF-8");
+
+			while (resultSet.next()) {
+
+				String musicname = resultSet.getString("musicname");
+				request.setAttribute("musicname", musicname);
+
+				String artistname = resultSet.getString("artistname");
+				request.setAttribute("artistname", artistname);
+
+				String oped = resultSet.getString("oped");
+				request.setAttribute("oped", oped);
+
+				String programname = resultSet.getString("programname");
+				request.setAttribute("programname", programname);
+
+			}
+
+		} catch (Exception e) {
+			printError(response, e);
+		}
+	}
+
+	public void printError(HttpServletResponse response, Exception e) {
+		try {
+			response.setContentType("text/html; charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.println("<html><head><title>Error</title></head><body>");
+			out.println("printError");
+			out.println(e.getMessage() + "<br>" + e);
+			out.println("</body></html>");
+			out.close();
+		} catch (Exception er) {
+			er.printStackTrace();
+		}
 	}
 
 }
