@@ -73,7 +73,7 @@ public class musicInfo extends HttpServlet {
 		// InputStreamの用意
 
 		URL url = new URL(
-				"https://api.annict.com/v1/works?access_token=evUnT3lwAhraTapSKpmZCmIesUfH1x60lI5zG_fpvrs&filter_title="
+				"https://api.annict.com/v1/works?access_token=*****************************&filter_title="
 						+ URLEncoder.encode(programName, "UTF-8"));
 		URLConnection connection = url.openConnection();
 		// 接続
