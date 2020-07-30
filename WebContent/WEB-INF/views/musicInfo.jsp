@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
-<%@ page import="java.net.URLEncoder" %>
 <html lang="ja">
 
 <head>
@@ -91,29 +90,13 @@
             <!--Main container-->
             <div class="container">
 
-                <% boolean isPost = (boolean)request.getAttribute("isPost");%>
-                <% if(!isPost){ %>
 
-                <!--Grid row-->
-                <div class="row">
-                    <!--Grid column-->
-                    <div class="col-lg-12 col-md-12 mb-4">
-                        <h2>ANISON DATABASE</h2>
-                        <hr>
-                        <p>
-                            <span class="todayTask none">このシステムを使うことで，アニメソングの情報を検索することができます。アニメソングの楽曲ページでは，その楽曲に関連するアニメーションなどの詳細を確認することができます。</span><br>
-
-                        </p>
-                    </div>
-                    <!--Grid column-->
-                </div>
-                <!--Grid row-->
 
                 <!--Grid row-->
                 <div class="row">
                     <!--Grid column-->
                     <div class="col-12">
-                        <h2>検索</h2>
+                        <h2>楽曲情報</h2>
                         <hr>
                     </div>
                     <!--Grid column-->
@@ -128,7 +111,7 @@
                         <div class="col-11">
                             <!-- Material input -->
                             <div class="md-form mt-0">
-                                <input type="text" class="form-control" placeholder="楽曲名" name="musicName">
+                                楽曲名：
                             </div>
                         </div>
                         <!-- Grid column -->
@@ -140,7 +123,7 @@
                         <div class="col-11">
                             <!-- Material input -->
                             <div class="md-form mt-0">
-                                <input type="text" class="form-control" placeholder="アーティスト名" name="artistName">
+                                アーティスト名：
                             </div>
                         </div>
                         <!-- Grid column -->
@@ -152,77 +135,62 @@
                         <div class="col-11">
                             <!-- Material input -->
                             <div class="md-form mt-0">
-                                <input type="text" class="form-control" placeholder="作品名" name="programName">
+                                作品名：
                             </div>
                         </div>
                         <!-- Grid column -->
                     </div>
                     <!-- Grid row -->
 
-                    <!-- Material form grid -->
-
                     <!--Grid row-->
-                    <div class="form-row">
-                        <!--繰り返し単位-->
-                        <div class="col-12">
-
-
-                            <button class="btn btn-elegant btn-rounded btn-lg my-0 col-12" type="submit">検索</button>
-
-
-
-                            <!--/.Card-->
-                        </div>
-
-                        <!--//繰り返し単位-->
-                    </div>
-                    <!--Grid row-->
-                </form>
-
-                <!--//form-->
-
-
-                <% }else if(isPost) { %>
-
-                <!--Grid row-->
                 <div class="row">
                     <!--Grid column-->
-                    <div class="col-lg-12 col-md-12 mb-4">
-                        <h2>検索結果</h2>
+                    <div class="col-12">
+                        <h2>関連アニメ作品</h2>
                         <hr>
                     </div>
                     <!--Grid column-->
                 </div>
                 <!--Grid row-->
 
-                <!--Grid row-->
-                <div class="row">
-                    <% ArrayList<HashMap<String,String>> rows = (ArrayList<HashMap<String,String>>)request.getAttribute("rows"); %>
-
-                    <!--繰り返し単位-->
-                    <% String encodedName = ""; %>
-                    <% for (HashMap<String,String> columns : rows) { %>
-                    <% encodedName = URLEncoder.encode(columns.get("programname") , "UTF-8"); %>
-                    <div class="col-md-12 col-lg-6 mb-4">
-                        <!--Card-->
-                        <div class="card">
-                            <!--Card content-->
-                            <div class="card-body">
-                                <!--Title-->
-                                <h4 class="card-title"><%= columns.get("musicname") %></h4>
-                                <!--Text-->
-                                <p class="card-text"><span class="programName">作品名：<%= columns.get("programname") %></span><br><span class="artistName">アーティスト名：<%= columns.get("artistname") %></span></p>
-                                <a href="musicInfo?musicId=<%= columns.get("musicid") %>&programId=<%= columns.get("programid") %>&programName=<%= encodedName %>" class="btn btn btn-indigo">詳細</a>
+                <!-- Material form grid -->
+                <form action="AnisonSearch" method="post">
+                    <!-- Grid row -->
+                    <div class="row justify-content-center">
+                        <!-- Grid column -->
+                        <div class="col-11">
+                            <!-- Material input -->
+                            <div class="md-form mt-0">
+                                楽曲名：
                             </div>
                         </div>
-                        <!--/.Card-->
+                        <!-- Grid column -->
                     </div>
-                    <% } %>
-                    <!--//繰り返し単位-->
-                </div>
-                <!--Grid row-->
-
-                <% } %>
+                    <!-- Grid row -->
+                    <!-- Grid row -->
+                    <div class="row justify-content-center">
+                        <!-- Grid column -->
+                        <div class="col-11">
+                            <!-- Material input -->
+                            <div class="md-form mt-0">
+                                アーティスト名：
+                            </div>
+                        </div>
+                        <!-- Grid column -->
+                    </div>
+                    <!-- Grid row -->
+                    <!-- Grid row -->
+                    <div class="row justify-content-center">
+                        <!-- Grid column -->
+                        <div class="col-11">
+                            <!-- Material input -->
+                            <div class="md-form mt-0">
+                                作品名：
+                            </div>
+                        </div>
+                        <!-- Grid column -->
+                    </div>
+                    <!-- Grid row -->
 
 
             </div>
